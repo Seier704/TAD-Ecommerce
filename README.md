@@ -7,7 +7,7 @@ La base de datos está diseñada para ser multi-tenant (soportar varias tiendas)
 
 La gerencia no tiene claro cuales son los principales flujos que deberían ser soportados por la base de datos, por lo que la propuesta de flujo debe venir desde el equipo de desarrollo.
 
-## Integrantes y Roles
+## Desarrolladores actuales
 
 | Integrante | Rol | Responsabilidades |
 | :--- | :--- | :--- |
@@ -15,6 +15,7 @@ La gerencia no tiene claro cuales son los principales flujos que deberían ser s
 | **Fabián Silva Toro** | Desarrollador principal | Rediseño del sistema de usuarios existente, para acomodar a ciertos errores que se nos presentaban, ademas de estar encargado de crear la optimización de consultas (índices, EXPLAIN PLAN), implementación de consultas analíticas complejas y creación de vistas. |
 | **Francisco Rojo Alfaro** | Desarrollo del paquete PL/SQL principal |  Manejo de excepciones y estrategia de respaldo y recuperación. |
 
+## Integrantes antiguos y sus roles
 
 | Integrantes Originales | Rol y Responsabilidades |
 | :--- | :--- |
