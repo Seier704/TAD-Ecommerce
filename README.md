@@ -1,4 +1,4 @@
-# Proyecto Integrador: Framework de Base de Datos para E-Commerce
+# Proyecto Integrador, Segunda vuelta: Framework de Base de Datos para E-Commerce
 
 ## Descripción del Sistema
 
@@ -7,15 +7,20 @@ La base de datos está diseñada para ser multi-tenant (soportar varias tiendas)
 
 La gerencia no tiene claro cuales son los principales flujos que deberían ser soportados por la base de datos, por lo que la propuesta de flujo debe venir desde el equipo de desarrollo.
 
-## Integrantes y Roles
+## Desarrolladores actuales
 
-| Integrante | Rol y Responsabilidades |
+| Integrante | Rol | Responsabilidades |
+| :--- | :--- | :--- |
+| **Lucas Campos Cortés** | Desarrollador de funciones auxiliares y revisiones | acargo de pruebas funcionales del sistema y creación de triggers de validación funcional. |
+| **Fabián Silva Toro** | Desarrollador principal | Rediseño del sistema de usuarios existente, para acomodar a ciertos errores que se nos presentaban, ademas de estar encargado de crear la optimización de consultas (índices, EXPLAIN PLAN), implementación de consultas analíticas complejas y creación de vistas. |
+| **Francisco Rojo Alfaro** | Desarrollo del paquete PL/SQL principal |  Manejo de excepciones y estrategia de respaldo y recuperación. |
+
+## Integrantes antiguos y sus roles
+
+| Integrantes Originales | Rol y Responsabilidades |
 | :--- | :--- |
 | **Benjamín López Huidobro** | Diseño del MER, creación de tablas principales y particiones, estructura del repositorio y documentación base (README). |
 | **Fernando Godoy Marín** | Diseño y construcción del Data Warehouse, diseño de tabla de auditoría, implementación de roles/usuarios y presentación/demo. |
-| **Lucas Campos Cortés** | Desarrollo de funciones auxiliares, pruebas funcionales del sistema y creación de triggers de validación funcional. |
-| **Fabián Silva Toro** | Optimización de consultas (índices, EXPLAIN PLAN), implementación de consultas analíticas complejas y creación de vistas. |
-| **Francisco Rojo Alfaro** | Desarrollo del paquete PL/SQL principal con manejo de excepciones y estrategia de respaldo y recuperación. |
 
 ## Requisitos Técnicos
 
@@ -36,8 +41,8 @@ La gerencia no tiene claro cuales son los principales flujos que deberían ser s
 ## Instrucciones de Instalación y Uso
 
 El entorno de desarrollo está completamente dockerizado. 
-Hemos destilado minuciosamente la esencia de la programación en un solo comando que lo hace todo.
-Sigue estos sencillos pasos para levantarlo y configurarlo.
+No sabemos completamente como lo han realizado nuestros otros compañeros para hacer funcional la base de datos, pero si sabemos como poder armarla y dejarla andado.
+Siguiendo estos pasos:
 
 ### Paso 0: Limpieza Opcional
 
@@ -55,9 +60,9 @@ La primera vez, Docker descargará la imagen, lo cual puede tardar.
 
 ```bash
 # Clona el repositorio (si aún no lo has hecho)
-git clone https://github.com/Jacket-69/TAD-framework-ecommerce.git
+git clone https://github.com/Seier704/TAD-Ecommerce.git
 
-cd TAD-framework-ecommerce
+cd TAD-ecommerce
 ```
 Construye, levanta y muestra los logs de la BD.
 ```bash
@@ -65,7 +70,7 @@ docker-compose up -d --build && docker-compose logs -f oracle-db
 ```
 *¿Qué verás?* Primero, verás a Docker construir la imagen.
 
-Luego, los logs empezarán a fluir. Puede tardar entre 2 y 5 minutos.
+Luego, los logs empezarán a fluir. Puede tardar entre 3 y 5 minutos.
 
 ### Paso 2: Laburo
 Luego de un tiempo la BD estara viva, configurada y esperando tus órdenes.
