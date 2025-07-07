@@ -12,8 +12,8 @@ PROMPT Creando procedimiento ECOMMERCE_FRAMEWORK.crear_usuario_aplicacion...
 -- Procedimiento Almacenado: ECOMMERCE_FRAMEWORK.crear_usuario_aplicacion
 -- --------------------------------------------------------------------------
 -- Este procedimiento permite insertar un nuevo usuario de aplicación
--- en la tabla USUARIOS, vinculándolo a una tienda existente por su nombre
--- y asignándole un usuario de base de datos Oracle específico.
+-- en la tabla USUARIOS, vinculándolo a una tienda existente por su nombre.
+-- El parametro p_oracle_username ahora es OPCIONAL (DEFAULT NULL).
 --
 -- Parámetros:
 --   p_nombre_tienda:      VARCHAR2 - Nombre de la tienda a la que pertenece el usuario.
@@ -21,7 +21,8 @@ PROMPT Creando procedimiento ECOMMERCE_FRAMEWORK.crear_usuario_aplicacion...
 --   p_password_hash:      VARCHAR2 - Hash seguro de la contraseña del usuario (NO la contraseña en texto plano).
 --   p_nombre:             VARCHAR2 - Nombre del usuario.
 --   p_apellido:           VARCHAR2 - Apellido del usuario.
---   p_oracle_username:    VARCHAR2 - Nombre del usuario de base de datos Oracle asociado (ej. 'VENDEDOR_ADIDAS_USER').
+--   p_oracle_username:    VARCHAR2 - [OPCIONAL] Nombre del usuario de base de datos Oracle asociado.
+--                                     Si se omite, se insertará NULL en oracle_username.
 -- --------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE ECOMMERCE_FRAMEWORK.crear_usuario_aplicacion (
     p_nombre_tienda      IN VARCHAR2,
@@ -29,18 +30,18 @@ CREATE OR REPLACE PROCEDURE ECOMMERCE_FRAMEWORK.crear_usuario_aplicacion (
     p_password_hash      IN VARCHAR2,
     p_nombre             IN VARCHAR2,
     p_apellido           IN VARCHAR2,
-    p_oracle_username    IN VARCHAR2
+    p_oracle_username    IN VARCHAR2 DEFAULT NULL -- ¡CAMBIO CLAVE AQUÍ! Ahora es opcional.
 )
 AS
     v_tienda_id NUMBER;
 BEGIN
     -- 1. Obtener el ID de la tienda usando el nombre proporcionado
-    -- Si la tienda no existe, se lanzará NO_DATA_FOUND.
     SELECT tienda_id INTO v_tienda_id
     FROM ECOMMERCE_FRAMEWORK.tiendas
     WHERE nombre = p_nombre_tienda;
 
     -- 2. Insertar el nuevo usuario de aplicación en la tabla USUARIOS
+    -- Se insertará p_oracle_username (que puede ser NULL si se omitió el parámetro)
     INSERT INTO ECOMMERCE_FRAMEWORK.usuarios (tienda_id, email, password_hash, nombre, apellido, oracle_username)
     VALUES (v_tienda_id, p_email_usuario, p_password_hash, p_nombre, p_apellido, p_oracle_username);
 
@@ -52,7 +53,7 @@ EXCEPTION
     WHEN NO_DATA_FOUND THEN
         DBMS_OUTPUT.PUT_LINE('ERROR: La tienda con nombre "' || p_nombre_tienda || '" no fue encontrada. Asegúrate de que haya sido insertada correctamente.');
     WHEN DUP_VAL_ON_INDEX THEN
-        DBMS_OUTPUT.PUT_LINE('ERROR: Ya existe un usuario con el email "' || p_email_usuario || '" en la tienda "' || p_nombre_tienda || '", o el oracle_username "' || p_oracle_username || '" ya está en uso.');
+        DBMS_OUTPUT.PUT_LINE('ERROR: Ya existe un usuario con el email "' || p_email_usuario || '" en la tienda "' || p_nombre_tienda || '", o el oracle_username "' || p_oracle_username || '" ya está en uso (si se proporcionó).');
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('ERROR INESPERADO al insertar el usuario: ' || SQLERRM);
 END;

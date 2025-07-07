@@ -23,49 +23,103 @@ if [[ -z "$USER_EXISTS" ]]; then
   echo "--> Ejecutando 01_crear_schema.sql como SYS..."
   sqlplus -s sys/"$ORACLE_PWD"@//localhost:1521/XEPDB1 as sysdba @/app/sql/01_crear_schema.sql
   if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Falló la creación del schema 😰. Revisa 01_crear_schema.sql."
+    echo "❌ ERROR: Falló la creación del schema. Revisa 01_crear_schema.sql."
     exit 1
   fi
 
-  # --- PASO 2: Crear las Tablas (y el GRANT SELECT a SYS sobre USUARIOS) ---
+  # --- PASO 2: Crear las Tablas ---
   echo "--> Ejecutando 02_crear_tablas.sql como ECOMMERCE_FRAMEWORK..."
   sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/02_crear_tablas.sql
   if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Falló la creación de tablas 😭. Revisa 02_crear_tablas.sql."
+    echo "❌ ERROR: Falló la creación de tablas. Revisa 02_crear_tablas.sql."
     exit 1
   fi
 
-  # --- PASO 3: Crear y compilar el Trigger de Logon del sistema ---
-  # Este paso debe ejecutarse como SYSDBA y después de que 02_crear_tablas.sql haya creado la tabla USUARIOS
-  # y otorgado el GRANT SELECT a SYS sobre ella.
-  echo "--> Ejecutando 03_trigger_logon.sql como SYS (AS SYSDBA)..."
-  sqlplus -s sys/"$ORACLE_PWD"@//localhost:1521/XEPDB1 as sysdba @/app/sql/03_trigger_logon.sql
+  # --- PASO 3: Crear Roles (solo creación de roles) ---
+  echo "--> Ejecutando 03_crear_roles_only.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/03_crear_roles.sql
   if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Falló la creación/compilación del trigger de logon 🚨. Revisa 03_trigger_logon.sql."
+    echo "❌ ERROR: Falló la creación de roles. Revisa 03_crear_roles_only.sql."
     exit 1
   fi
 
-  # --- PASO 4: Insertar las Tiendas Iniciales ---
-  echo "--> Ejecutando 04_insertar_tiendas.sql como ECOMMERCE_FRAMEWORK..."
-  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/04_insertar_tiendas.sql
+  # --- PASO 4: Crear y compilar el Trigger de Logon del sistema ---
+  echo "--> Ejecutando 04_trigger_logon.sql como SYS (AS SYSDBA)..."
+  sqlplus -s sys/"$ORACLE_PWD"@//localhost:1521/XEPDB1 as sysdba @/app/sql/04_trigger_logon.sql
   if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Falló la inserción de tiendas. Revisa 04_insertar_tiendas.sql."
+    echo "❌ ERROR: Falló la creación/compilación del trigger de logon. Revisa 04_trigger_logon.sql."
     exit 1
   fi
 
-  # --- PASO 5: Crear Procedimientos Almacenados (ej. crear_usuario_aplicacion) ---
-  echo "--> Ejecutando 05_procedimientos.sql como ECOMMERCE_FRAMEWORK..."
-  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/05_procedimientos.sql
+  # --- PASO 5: Insertar las Tiendas Iniciales ---
+  echo "--> Ejecutando 05_insertar_tiendas.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/05_insertar_tiendas.sql
   if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Falló la creación de procedimientos. Revisa 05_procedimientos.sql."
+    echo "❌ ERROR: Falló la inserción de tiendas. Revisa 05_insertar_tiendas.sql."
     exit 1
   fi
 
-  # --- PASO 6: Insertar Usuarios Vendedores (llamando al procedimiento) ---
-  echo "--> Ejecutando 06_insertar_usuarios_vendedores.sql como ECOMMERCE_FRAMEWORK..."
-  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/06_insertar_usuarios_vendedores.sql
+  # --- PASO 6: Crear Procedimientos Almacenados ---
+  echo "--> Ejecutando 06_procedimientos.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/06_procedimientos.sql
   if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Falló la inserción de usuarios vendedores. Revisa 06_insertar_usuarios_vendedores.sql."
+    echo "❌ ERROR: Falló la creación de procedimientos. Revisa 06_procedimientos.sql."
+    exit 1
+  fi
+
+  # --- PASO 7: Insertar Usuarios Vendedores (los roles ya existen del Paso 3) ---
+  echo "--> Ejecutando 07_insertar_usuarios_vendedores.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/07_insertar_usuarios_vendedores.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló la inserción de usuarios vendedores. Revisa 07_insertar_usuarios_vendedores.sql."
+    exit 1
+  fi
+
+  # --- PASO 8: Optimización e Implementación de Vistas (RLS y DW) ---
+  echo "--> Ejecutando 08_optimizar_vistas.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/08_optimizar_vistas.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló la optimización de vistas. Revisa 08_optimizar_vistas.sql."
+    exit 1
+  fi
+
+  # --- PASO 8.5: Asignar Permisos a Roles (ahora que las vistas existen) ---
+  echo "--> Ejecutando 13_grant.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/13_grant.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló la asignación de permisos sobre vistas. Revisa 13_grant.sql."
+    exit 1
+  fi
+
+  # --- PASO 9: Crear Índices y Planes de Ejecución ---
+  echo "--> Ejecutando 09_index_plan.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/09_index_plan.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló la creación de índices/planes. Revisa 09_index_plan.sql."
+    exit 1
+  fi
+
+  # --- PASO 10: Crear Triggers (Funcionales y DW) ---
+  echo "--> Ejecutando 10_triggers.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/10_triggers.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló la creación de triggers. Revisa 10_triggers.sql."
+    exit 1
+  fi
+
+  # --- PASO 11: Poblar Usuarios (Clientes Comunes) ---
+  echo "--> Ejecutando 11_poblar_usuarios.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/11_poblar_usuarios.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló el poblamiento de usuarios. Revisa 11_poblar_usuarios.sql."
+    exit 1
+  fi
+
+  # --- PASO 12: Poblar Pedidos y Productos Aleatorios ---
+  echo "--> Ejecutando 12_poblar_pedidos_productos.sql como ECOMMERCE_FRAMEWORK..."
+  sqlplus -s ECOMMERCE_FRAMEWORK/framework123@//localhost:1521/XEPDB1 @/app/sql/12_poblar_pedidos_productos.sql
+  if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Falló el poblamiento de pedidos/productos. Revisa 12_poblar_pedidos_productos.sql."
     exit 1
   fi
 
